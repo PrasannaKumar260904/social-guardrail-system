@@ -100,7 +100,7 @@ Authorization: Bearer <JWT_TOKEN>
 
 ### 🔐 Auth
 
-* `POST /api/users/register`
+* `POST /api/users`
 * `POST /api/users/login`
 
 ---
