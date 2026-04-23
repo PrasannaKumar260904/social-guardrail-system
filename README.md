@@ -106,7 +106,28 @@ Authorization: Bearer <JWT_TOKEN>
 ---
 
 # 🔥 Phase 2 — Redis Virality Engine & Guardrails
+## ⚡ Thread Safety
 
+Redis acts as a **gatekeeper**:
+- Validation happens before DB write  
+- Uses atomic operations (`INCR`, `EXISTS`)  
+- Prevents race conditions  
+
+---
+
+## ⚡ How Thread Safety is Achieved
+
+Redis is used as a gatekeeper before database writes.
+
+- Bot limit uses atomic `INCR`
+- Cooldown uses `EXISTS + TTL`
+- No in-memory state is used
+
+This ensures:
+- No race conditions
+- Exact enforcement of limits (100 bot comments max)
+- Safe concurrent handling
+---
 ## 🧮 Virality Score
 
 Stored in Redis:
