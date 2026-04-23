@@ -322,3 +322,140 @@ This project demonstrates:
 Redis is used as a **real-time guardrail engine** to ensure strict control over system behavior under high concurrency, making the backend reliable, scalable, and production-ready.
 
 ---
+🚀 How to Run the Project
+1️⃣ Start Infrastructure (Docker)
+docker-compose up -d
+
+👉 Verify:
+
+docker ps
+
+Expected:
+
+PostgreSQL → port 5432
+Redis → port 6379
+2️⃣ Run Spring Boot Application
+mvn clean install
+mvn spring-boot:run
+
+Server runs at:
+
+http://localhost:9999
+🗄️ Database Access (PostgreSQL)
+
+Connect using:
+
+psql -U postgres -d social_db -h localhost -p 5432
+
+Check data:
+
+SELECT * FROM post;
+SELECT * FROM comment;
+SELECT COUNT(*) FROM comment WHERE post_id = 1;
+⚡ Redis Commands (Debugging)
+
+Open Redis CLI:
+
+redis-cli
+
+Useful commands:
+
+GET post:1:bot_count
+GET post:1:virality_score
+KEYS *
+
+Flush (for testing):
+
+FLUSHALL
+🧪 End-to-End Testing (Postman)
+🔐 Step 1 — Register User
+POST /api/users/register
+
+Body:
+
+{
+  "username": "user1",
+  "password": "1234"
+}
+🔑 Step 2 — Login
+POST /api/users/login
+
+Response:
+
+{
+  "token": "JWT_TOKEN"
+}
+🔒 Step 3 — Use JWT
+
+Add header:
+
+Authorization: Bearer <JWT_TOKEN>
+📝 Step 4 — Create Post
+POST /api/posts
+💬 Step 5 — Add Comment (Human)
+{
+  "authorId": 1,
+  "authorType": "USER",
+  "content": "Nice post",
+  "depthLevel": 0
+}
+🤖 Step 6 — Add Bot Comment
+{
+  "authorId": 100,
+  "authorType": "BOT",
+  "content": "Spam bot",
+  "depthLevel": 0
+}
+🔥 Guardrail Testing
+🧪 Test 1 — Bot Limit (100)
+
+👉 Send 200 bot requests
+
+Expected:
+
+100 → Success
+100 → 429 Too Many Requests
+🧪 Test 2 — Cooldown
+
+Same bot + same user:
+
+Cooldown active (10 mins)
+🧪 Test 3 — Depth Limit
+depthLevel > 20 → 400 Bad Request
+🧪 Test 4 — Invalid Post
+Post not found → 404
+⚡ Concurrency Test (Spam Simulation)
+
+Using Postman Runner + bots.csv
+
+Result:
+
+Metric	Value
+Redis bot_count	100
+DB comments	100
+
+✔ No race condition
+✔ Perfect atomic control
+
+🔔 Notification Testing
+Step 1 — Trigger bot comments
+
+👉 Check logs:
+
+Push Notification Sent to User
+Step 2 — Trigger multiple bot interactions
+
+👉 Redis:
+
+KEYS user:*:pending_notifs
+Step 3 — Wait for Scheduler (5 min)
+
+Expected log:
+
+Summarized Push Notification: Bot X and N others interacted
+🐳 Docker Commands (Useful)
+docker ps
+docker-compose up -d
+docker-compose down
+docker logs social_postgres
+docker logs social_redis
