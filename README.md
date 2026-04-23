@@ -260,6 +260,7 @@ docker-compose up -d
 
 ---
 
+
 # 🧠 Key Design Decisions
 
 ### 🔥 Redis as Gatekeeper
@@ -320,142 +321,147 @@ This project demonstrates:
 ##  Final Note
 
 Redis is used as a **real-time guardrail engine** to ensure strict control over system behavior under high concurrency, making the backend reliable, scalable, and production-ready.
+---
+For Reference :
+# 🚀 How to Run the Project
+
+## 1️⃣ Start Docker
+
+```bash
+docker-compose up -d
+```
+
+Verify:
+
+```bash
+docker ps
+```
 
 ---
-🚀 How to Run the Project
-1️⃣ Start Infrastructure (Docker)
-docker-compose up -d
 
-👉 Verify:
+## 2️⃣ Run Backend
 
-docker ps
-
-Expected:
-
-PostgreSQL → port 5432
-Redis → port 6379
-2️⃣ Run Spring Boot Application
+```bash
 mvn clean install
 mvn spring-boot:run
+```
 
-Server runs at:
+Server:
 
+```
 http://localhost:9999
-🗄️ Database Access (PostgreSQL)
+```
 
-Connect using:
+---
 
+# 🗄️ Database Access
+
+```bash
 psql -U postgres -d social_db -h localhost -p 5432
+```
 
-Check data:
-
+```sql
 SELECT * FROM post;
 SELECT * FROM comment;
 SELECT COUNT(*) FROM comment WHERE post_id = 1;
-⚡ Redis Commands (Debugging)
+```
 
-Open Redis CLI:
+---
 
+# ⚡ Redis Commands
+
+```bash
 redis-cli
+```
 
-Useful commands:
-
+```bash
 GET post:1:bot_count
 GET post:1:virality_score
 KEYS *
-
-Flush (for testing):
-
 FLUSHALL
-🧪 End-to-End Testing (Postman)
-🔐 Step 1 — Register User
-POST /api/users/register
+```
 
-Body:
+---
 
+# 🧪 Testing (Postman)
+
+## Register
+
+```json
 {
   "username": "user1",
   "password": "1234"
 }
-🔑 Step 2 — Login
-POST /api/users/login
+```
 
-Response:
+## Login → Get JWT
 
-{
-  "token": "JWT_TOKEN"
-}
-🔒 Step 3 — Use JWT
+## Use Header
 
-Add header:
-
+```
 Authorization: Bearer <JWT_TOKEN>
-📝 Step 4 — Create Post
-POST /api/posts
-💬 Step 5 — Add Comment (Human)
+```
+
+---
+
+## Create Post
+
+`POST /api/posts`
+
+---
+
+## Add Comment
+
+```json
 {
   "authorId": 1,
   "authorType": "USER",
   "content": "Nice post",
   "depthLevel": 0
 }
-🤖 Step 6 — Add Bot Comment
+```
+
+---
+
+## Bot Comment
+
+```json
 {
   "authorId": 100,
   "authorType": "BOT",
   "content": "Spam bot",
   "depthLevel": 0
 }
-🔥 Guardrail Testing
-🧪 Test 1 — Bot Limit (100)
+```
 
-👉 Send 200 bot requests
+---
 
-Expected:
+# 🔥 Guardrail Tests
 
-100 → Success
-100 → 429 Too Many Requests
-🧪 Test 2 — Cooldown
+* Bot limit → 100 allowed
+* Cooldown → blocked
+* Depth > 20 → rejected
+* Invalid post → 404
 
-Same bot + same user:
+---
 
-Cooldown active (10 mins)
-🧪 Test 3 — Depth Limit
-depthLevel > 20 → 400 Bad Request
-🧪 Test 4 — Invalid Post
-Post not found → 404
-⚡ Concurrency Test (Spam Simulation)
+# 🔔 Notification Testing
 
-Using Postman Runner + bots.csv
+* Check logs → "Push Notification Sent"
+* Redis → pending notifications
+* Scheduler → summary message
 
-Result:
+---
 
-Metric	Value
-Redis bot_count	100
-DB comments	100
+# 🐳 Docker Commands
 
-✔ No race condition
-✔ Perfect atomic control
-
-🔔 Notification Testing
-Step 1 — Trigger bot comments
-
-👉 Check logs:
-
-Push Notification Sent to User
-Step 2 — Trigger multiple bot interactions
-
-👉 Redis:
-
-KEYS user:*:pending_notifs
-Step 3 — Wait for Scheduler (5 min)
-
-Expected log:
-
-Summarized Push Notification: Bot X and N others interacted
-🐳 Docker Commands (Useful)
+```bash
 docker ps
 docker-compose up -d
 docker-compose down
 docker logs social_postgres
 docker logs social_redis
+```
+
+
+
