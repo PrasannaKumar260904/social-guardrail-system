@@ -319,6 +319,7 @@ All validation logic happens in Redis **before database write**
 
 ---
 🚀 How to Run the Project
+
 1️⃣ Start Infrastructure (Docker)
 docker-compose up -d
 👉 Verify Running Containers
