@@ -281,6 +281,22 @@ docker-compose up -d
 
 ---
 
+# 📸 Proof of Correctness
+
+## Postman Runner — Successful Requests (200 OK)
+![Postman Success](screenshots/postman-success-200.png)
+
+## Postman Runner — Rate Limit Enforced (429 Errors)
+![Postman Failure](screenshots/postman-failure-429.png)
+
+## Database Verification (Only 100 Comments Stored)
+![Database Proof](screenshots/database-proof.png)
+
+## Redis Verification (Bot Count = 100)
+![Redis Proof](screenshots/redis-proof.png)
+
+---
+
 
 # 🧠 Key Design Decisions
 
@@ -318,123 +334,6 @@ All validation logic happens in Redis **before database write**
 * Dockerized setup
 
 ---
-🚀 How to Run the Project
-
-1️⃣ Start Infrastructure (Docker)
-docker-compose up -d
-👉 Verify Running Containers
-docker ps
-Expected:
-
-PostgreSQL → 5432
-
-Redis → 6379
-
-2️⃣ Run Spring Boot Application
-mvn clean install
-mvn spring-boot:run
-🌐 Server URL
-http://localhost:9999
-🗄️ Database Access (PostgreSQL)
-Connect to Database
-psql -U postgres -d social_db -h localhost -p 5432
-Run Queries
-SELECT * FROM post;
-SELECT * FROM comment;
-SELECT COUNT(*) FROM comment WHERE post_id = 1;
-⚡ Redis Commands (Debugging)
-Open Redis CLI
-redis-cli
-Useful Commands
-GET post:1:bot_count
-GET post:1:virality_score
-KEYS *
-Reset Redis (for testing)
-FLUSHALL
-🧪 End-to-End Testing (Postman)
-🔐 Step 1 — Register User
-POST /api/users/register
-
-{
-  "username": "user1",
-  "password": "1234"
-}
-🔑 Step 2 — Login
-POST /api/users/login
-
-Response:
-
-{
-  "token": "JWT_TOKEN"
-}
-🔒 Step 3 — Use JWT Token
-Add header:
-
-Authorization: Bearer <JWT_TOKEN>
-📝 Step 4 — Create Post
-POST /api/posts
-
-💬 Step 5 — Add Comment (Human)
-{
-  "authorId": 1,
-  "authorType": "USER",
-  "content": "Nice post",
-  "depthLevel": 0
-}
-🤖 Step 6 — Add Bot Comment
-{
-  "authorId": 100,
-  "authorType": "BOT",
-  "content": "Spam bot",
-  "depthLevel": 0
-}
-🔥 Guardrail Testing
-🧪 Test 1 — Bot Limit (100)
-👉 Send 200 bot requests
-
-Expected:
-
-First 100 → ✅ Success
-
-Next 100 → ❌ 429 Too Many Requests
-
-🧪 Test 2 — Cooldown
-👉 Same bot + same user:
-
-Cooldown active (10 mins)
-🧪 Test 3 — Depth Limit
-depthLevel > 20 → 400 Bad Request
-🧪 Test 4 — Invalid Post
-Post not found → 404
-⚡ Concurrency Test (Spam Simulation)
-Using Postman Runner + bots.csv
-
-✅ Result
-Metric	Value
-Redis bot_count	100
-DB comments	100
-✔ No race condition
-✔ Perfect atomic control
-
-🔔 Notification Testing
-Step 1 — Trigger Bot Comments
-👉 Check application logs:
-
-Push Notification Sent to User
-Step 2 — Trigger Multiple Bot Interactions
-👉 Check Redis:
-
-KEYS user:*:pending_notifs
-Step 3 — Wait for Scheduler (5 minutes)
-Expected log:
-
-Summarized Push Notification: Bot X and N others interacted
-🐳 Docker Commands (Useful)
-docker ps
-docker-compose up -d
-docker-compose down
-docker logs social_postgres
-docker logs social_redis
 
 # 🏁 Conclusion
 
